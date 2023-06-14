@@ -47,11 +47,21 @@ int main(void)
         a[i] = 1.0; b[i] = 2.0; 
     }
 
-    // Move vectors to GPU memory
-    
+    // Allocate GPU memory
+    float *d_a, *d_b, *d_c;
+    cudaMalloc((void**)&d_a, sizeof(float) * N);
+    cudaMalloc((void**)&d_b, sizeof(float) * N);
+    cudaMalloc((void**)&d_c, sizeof(float) * N);
+
+    // Move data to allocated GPU memory
+    cudaMemcpy(d_a, a, sizeof(float) * N, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_a, b, sizeof(float) * N, cudaMemcpyHostToDevice);
 
     // Add vectors 
     vector_add<<<1, 1>>>(out, a, b, N);
+
+    // Move data back to host memory
+    cudaMemcpy(out, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);
 
     // Show first N values of vectors
     printf("a: ");
