@@ -1,11 +1,15 @@
 #define N 10000000
+#define new(dtype,length) (dtype*)malloc(sizeof(dtype) * length)
+#define BILLION 1E9
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
 
 __global__ void vector_add(float *out, float *a, float *b, int n)
 {
-    for (int i = 0; i < n i++)
+    for (int i = 0; i < n; i++)
     {
         out[i] = a[i] + b[i];
     }
@@ -36,10 +40,20 @@ After executing the kernel data has to be moved back to host memory (RAM) for fu
 
 int main(void)
 {
+    // Initialize time variables
+    struct timespec start, end;
+    uint64_t diff;
+
+    // Start timer
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     // Allocate memory for vectors
-    float *a    = malloc(sizeof(float) * N);
-    float *b    = malloc(sizeof(float) * N);
-    float *out  = malloc(sizeof(float) * N);
+    // float *a    = (float*)malloc(sizeof(float) * N);
+    // float *b    = (float*)malloc(sizeof(float) * N);
+    // float *out  = (float*)malloc(sizeof(float) * N);
+    float *a    = new(float, N);
+    float *b    = new(float, N);
+    float *out  = new(float, N);
 
     // Populate vectors
     for (int i = 0; i < N; i++)
@@ -48,20 +62,26 @@ int main(void)
     }
 
     // Allocate GPU memory
-    float *d_a, *d_b, *d_c;
+    float *d_a, *d_b, *d_out;
     cudaMalloc((void**)&d_a, sizeof(float) * N);
     cudaMalloc((void**)&d_b, sizeof(float) * N);
-    cudaMalloc((void**)&d_c, sizeof(float) * N);
+    cudaMalloc((void**)&d_out, sizeof(float) * N);
 
     // Move data to allocated GPU memory
     cudaMemcpy(d_a, a, sizeof(float) * N, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_a, b, sizeof(float) * N, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, b, sizeof(float) * N, cudaMemcpyHostToDevice);
 
     // Add vectors 
-    vector_add<<<1, 1>>>(out, a, b, N);
+    vector_add<<<1, 1>>>(d_out, d_a, d_b, N);
 
     // Move data back to host memory
-    cudaMemcpy(out, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);
+    cudaMemcpy(out, d_out, sizeof(float) * N, cudaMemcpyDeviceToHost);
+
+    // Stop timer
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    // Calculate time difference
+    diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
 
     // Show first N values of vectors
     printf("a: ");
@@ -70,4 +90,11 @@ int main(void)
     show_n(b, 5);
     printf("\nout: ");
     show_n(out, 5);
+
+    // FLOPS
+    printf("\nFLOPS: %.3f\n", (float)N / (float)diff);
+
+    // Free memory
+    free(a); free(b); free(out);
+    cudaFree(d_a); cudaFree(d_b); cudaFree(d_out);
 }
