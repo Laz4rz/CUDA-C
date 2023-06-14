@@ -14,7 +14,7 @@ and did the same thing as the cpu before, withouth using the benefits of the gpu
 */
 
 #define new(dtype, length) (dtype*)malloc(sizeof(dtype) * length)
-#define N 1000000
+#define N 10000000
 #define BILLION 1E9
 
 #include <stdio.h>
@@ -77,7 +77,7 @@ int main(void){
     vector_add<<<1, 256>>>(d_out, d_a, d_b, N);
 
     // Move results from GPU to RAM
-    cudaMemcpy(d_out, out, sizeof(float)*N, cudaMemcpyDeviceToHost);
+    cudaMemcpy(out, d_out, sizeof(float)*N, cudaMemcpyDeviceToHost);
 
     // Stop timer
     clock_gettime(CLOCK_MONOTONIC, &end);
