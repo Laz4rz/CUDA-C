@@ -72,7 +72,7 @@ int main(void)
     cudaMemcpy(d_b, b, sizeof(float) * N, cudaMemcpyHostToDevice);
 
     // Add vectors 
-    vector_add<<<1, 1>>>(d_out, d_a, d_b, N);
+    vector_add<<<1, 1>>>(d_out, d_a, d_b, N); // this <<<1, 1>>> only allocates 1 grid with 1 block, so this still doesn't run in parallel
 
     // Move data back to host memory
     cudaMemcpy(out, d_out, sizeof(float) * N, cudaMemcpyDeviceToHost);
