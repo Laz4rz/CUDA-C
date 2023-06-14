@@ -12,6 +12,7 @@ time ./filename
 ```
 
 ## Profiling
+CUDA files
 ```
 nvprof ./filename
 ```
