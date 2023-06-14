@@ -1,7 +1,10 @@
 #define N 10000000
+#define BILLION 1000000000L // L - treat as long integer
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h> // https://people.cs.rutgers.edu/~pxk/416/notes/c-tutorials/gettime.html
+#include <stdint.h>
 
 void vector_add(float *out, float *a, float *b, int n)
 {
@@ -26,10 +29,16 @@ void show_n(float *v, int n)
 
 int main(void)
 {
+    uint64_t diff;
+    struct timespec start, end;
+    
+    // Start timer
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     // Allocate memory location of given size with type float to each pointer
-    float *a   = malloc(sizeof(float) * N);
-    float *b   = malloc(sizeof(float) * N);
-    float *out = malloc(sizeof(float) * N);
+    float *a   = (float*)malloc(sizeof(float) * N);
+    float *b   = (float*)malloc(sizeof(float) * N);
+    float *out = (float*)malloc(sizeof(float) * N);
 
     // Initialize array
     for(int i = 0; i < N; i++){
@@ -39,6 +48,12 @@ int main(void)
     // Main function
     vector_add(out, a, b, N);
 
+    // End timer
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    // Get time in seconds
+    diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+
     // Print first 5 of a, b, out
     printf("a: ");
     show_n(a, 5);
@@ -46,4 +61,10 @@ int main(void)
     show_n(b, 5);
     printf("\nout: ");
     show_n(out, 5);
+
+    // FLOPS
+    printf("\nFLOPS: %f\n", (float)N / (float)diff);
+
+    // Free memory
+    free(a); free(b); free(out);
 }
