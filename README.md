@@ -5,3 +5,13 @@ To compile use `nvcc` compiler provided in CUDA toolkit.
 ```
 nvcc filename.cu -o filename
 ```
+
+## Timing
+```
+time ./filename
+```
+
+## Profiling
+```
+nvprof ./filename
+```
